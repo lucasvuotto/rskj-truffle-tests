@@ -1,0 +1,47 @@
+platform: linux
+
+inputs:
+- name: rskj-jar
+
+outputs:
+- name: rskj-truffle-tests-results
+
+run:
+  path: sh
+  args:
+  - -ceux
+  - |
+    results_dir=$(pwd)/rskj-truffle-tests-results
+
+    java \
+      -D'rpc.providers.web.http.bind_address=0.0.0.0' \
+      -D'rpc.providers.web.ws.enabled=true' \
+      -D'rpc.providers.web.http.hosts.0=localhost' \
+      -D'rpc.providers.web.http.hosts.1=127.0.0.1' \
+      -D'rpc.providers.web.http.hosts.2=::1' \
+      -cp ./rskj-jar/rsk.jar \
+      co.rsk.Start --regtest &
+
+    cd /home/node
+
+    try=0
+    MAX_TRIES=60
+    while [ $try -lt $MAX_TRIES ]; do
+      if nc -z localhost 4444; then
+        break
+      fi
+      sleep 1
+      try=$((try + 1))
+    done
+
+    if [ $try -ge $MAX_TRIES ]; then
+      echo "Couldn't contact rskj; aborting." >&2
+      exit 1
+    fi
+
+    npm test
+
+    cp \
+      results/test-results.xml \
+      xray-conf/createTestExecution.json \
+      "$results_dir"

@@ -43,8 +43,8 @@ module.exports = {
     // options below to some value.
     //
     rsk: {
-      host: "127.0.0.1",     // Localhost (default: none)
-      port: 4444,            // Standard Ethereum port (default: none)
+      host: process.env.RSKJ_HOST || "127.0.0.1",     // Localhost (default: none)
+      port: process.env.RSKJ_PORT || 4444,            // Standard Ethereum port (default: none)
       network_id: 33,       // Any network (default: none)
       chainid: 33
     },
